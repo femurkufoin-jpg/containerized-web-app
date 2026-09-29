@@ -1,8 +1,20 @@
-from flask import jsonify
+import os
+
+import redis
+from flask import Flask, jsonify
 
 
-def register_routes(app):
-    visits = {"count": 0}
+def create_app():
+    app = Flask(__name__)
+
+    redis_host = os.getenv("REDIS_HOST", "localhost")
+    redis_port = int(os.getenv("REDIS_PORT", "6379"))
+
+    redis_client = redis.Redis(
+        host=redis_host,
+        port=redis_port,
+        decode_responses=True,
+    )
 
     @app.get("/health")
     def health():
@@ -10,5 +22,7 @@ def register_routes(app):
 
     @app.get("/visits")
     def get_visits():
-        visits["count"] += 1
-        return jsonify({"visits": visits["count"]})
+        count = redis_client.incr("visits")
+        return jsonify({"visits": count})
+
+    return app
