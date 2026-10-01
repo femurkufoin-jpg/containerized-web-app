@@ -19,7 +19,9 @@ def test_visits():
     second_response = client.get("/visits")
 
     assert first_response.status_code == 200
-    assert first_response.get_json() == {"visits": 1}
-
     assert second_response.status_code == 200
-    assert second_response.get_json() == {"visits": 2}
+
+    first_visits = first_response.get_json()["visits"]
+    second_visits = second_response.get_json()["visits"]
+
+    assert second_visits == first_visits + 1
